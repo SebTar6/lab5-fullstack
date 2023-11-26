@@ -4,29 +4,30 @@ Repozytorium zawiera rozwiązanie do laboratorium numer 5 z przedmiotu Programow
 
 ## Spis
 
-- [namespace.yaml](#namespace.yaml)
-- [res_quota.yaml](#res_quota.yaml)
-- [worker_pod.yaml](#worker_pod.yaml)
-- [php_apache_deployment.yaml](#php_apache_deployment.yaml)
-- [autoscaler.yaml](#autoscaler.yaml)
+- [namespace.yaml](#namespace)
+- [res_quota.yaml](#resourcequota)
+- [worker_pod.yaml](#pod)
+- [php_apache_deployment.yaml](#deployment&service)
+- [autoscaler.yaml](#autoscaler)
 - [instalacja](#instalacja)
 - [testowanie](#testowanie)
+- [wyliczanie max replik](#repliki)
 
-## namespace.yaml
+## Namespace
 
 Plik definiuje namespace, w której będą uruchamiane komponenty rozwiązania.
 
-## res_quota.yaml
+## ResourceQuota
 
 Plik definiuje limity zasobów dla przestrzeni nazw "zad5", takie jak maksymalna liczba Pod-ów, maksymalne żądania CPU i maksymalne żądania pamięci RAM.
 Te ograniczenia będą obowiązywać w obrębie tej przestrzeni nazw, a system Kubernetes będzie monitorować i egzekwować te limity.
 
-## worker_pod.yaml
+## Pod
 
 Plik definiuje Pod o nazwie "worker" w przestrzeni nazw "zad5" z jednym kontenerem opartym na obrazie Nginx.
 Ograniczenia na zasoby (pamięć RAM i procesor) są również zdefiniowane dla tego kontenera.
 
-## php_apache_deployment.yaml
+## Deployment&Service
 
 
 Plik definiuje Deployment oraz Service w przestrzeni nazw zad5 dla aplikacji "php-apache".
@@ -34,7 +35,7 @@ Deployment określa, że każda instancja ma być oparta na obrazie "k8s.gcr.io/
 Dodatkowo, Service "php-apache" jest utworzony jako interfejs dla komunikacji z replikami, przekierowując ruch z portu 80 do odpowiednich Pod-ów opartych na etykiecie "run: php-apache".
 Ten plik jest kluczowy do zarządzania skalowaniem i dostępnością aplikacji w środowisku Kubernetes.
 
-## autoscaler.yaml
+## Autoscaler
 
 Plik definiuje obiekt HorizontalPodAutoscaler (HPA) w przestrzeni nazw zad5.
 HPA umożliwia automatyczne skalowanie aplikacji w oparciu o aktualne obciążenie. 
@@ -47,36 +48,45 @@ Konfiguracja HPA jest kluczowa dla elastycznego dostosowywania infrastruktury do
 Utwórz przestrzeń nazw:
 ```bash
 kubectl apply -f zad5-namespace.yaml
+```
 
 Utwórz Quotę:
 ```bash
 kubectl apply -f zad5-quota.yaml
+```
 
 Utwórz Pod-a w przestrzeni zad5:
 ```bash
 kubectl apply -f zad5-worker-pod.yaml
+```
 
 Utwórz Deployment i Service:
 ```bash
 kubectl apply -f zad5-php-apache.yaml
+```
 
 Utwórz HorizontalPodAutoscaler:
 ```bash
 kubectl apply -f zad5-hpa.yaml
+```
 
 Potwierdź działanie i sprawdź zasoby:
 ```bash
 kubectl get all -n zad5
+```
 ```bash
 kubectl describe quota -n zad5 resource-limit
+```
 ```bash
 kubectl describe hpa -n zad5 php-apache-hpa
+```
 
 ## Testowanie
 
 Uzyskaj adres IP i port usługi "php-apache" w przestrzeni nazw "zad5":
 ```bash
 kubectl get service -n zad5 php-apache
+```
 
 Do testowania obciążenia można użyć różnych narzędzi.
 Ja na potrzeby testu użyję narzędzia "wrk", które testuje wydajność HTTP.
@@ -84,7 +94,29 @@ Ja na potrzeby testu użyję narzędzia "wrk", które testuje wydajność HTTP.
 Instalacja dla Red Hat/CentOS:
 ```bash
 sudo yum install wrk
+```
 
 Instalacja dla Debian/Ubuntu:
 ```bash
 sudo apt-get install wrk
+```
+
+Przykładowe użycie:
+```bash
+wrk -t10 -c10 -d1m http://<ip>:<port>/
+```
+
+## Repliki
+
+Aby wyliczyć ilość replik należy uwzględnić dostępność zasobów dla danego namespace.
+W namespace lab5 jest dostępnych: 2000m CPU oraz 1.5Gi RAM.
+
+Mamy jeden działający pod (worker), który zabiera maksymalnie 200m CPU oraz 200Mi RAM.
+Zostaje do dyspozycji dla depoymentu: 1800m CPU oraz 1.3Gi RAM.
+
+Każdy pod w deploymencie zabiera maksymalnie 250m CPU oraz 250Mi RAM.
+Należy wykonać dzielenie całkowite:
+- 1800m // 250m = 7
+- 1300Mi // 250Mi = 5
+
+Widzimy, że jesteśmy ograniczeni ze względu na dostępny RAM, a maksymalna liczba replik, którą może uruchomić deployment w tym namespace to: **5**
