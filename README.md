@@ -8,7 +8,7 @@ Repozytorium zawiera rozwiązanie do laboratorium numer 5 z przedmiotu Programow
 - [res_quota.yaml](#resourcequota)
 - [worker_pod.yaml](#pod)
 - [php_apache_deployment.yaml](#deploymentservice)
-- [autoscaler.yaml](#autoscaler)
+- [autoscaler.yaml](#horizontalpodautoscaler)
 - [instalacja](#instalacja)
 - [testowanie](#testowanie)
 - [wyliczanie max replik](#repliki)
@@ -104,6 +104,12 @@ sudo apt-get install wrk
 Przykładowe użycie:
 ```bash
 wrk -t10 -c10 -d1m http://<ip>:<port>/
+```
+
+Monitorowanie ilości podów i zachowania autoscalera:
+```bash
+kubectl get pods -n zad5
+kubectl describe horizontalpodautoscaler php-apache -n zad5
 ```
 
 ## Repliki
