@@ -7,7 +7,7 @@ Repozytorium zawiera rozwiązanie do laboratorium numer 5 z przedmiotu Programow
 - [namespace.yaml](#namespace)
 - [res_quota.yaml](#resourcequota)
 - [worker_pod.yaml](#pod)
-- [php_apache_deployment.yaml](#deployment&service)
+- [php_apache_deployment.yaml](#deploymentservice)
 - [autoscaler.yaml](#autoscaler)
 - [instalacja](#instalacja)
 - [testowanie](#testowanie)
@@ -27,7 +27,7 @@ Te ograniczenia będą obowiązywać w obrębie tej przestrzeni nazw, a system K
 Plik definiuje Pod o nazwie "worker" w przestrzeni nazw "zad5" z jednym kontenerem opartym na obrazie Nginx.
 Ograniczenia na zasoby (pamięć RAM i procesor) są również zdefiniowane dla tego kontenera.
 
-## Deployment&Service
+## DeploymentService
 
 
 Plik definiuje Deployment oraz Service w przestrzeni nazw zad5 dla aplikacji "php-apache".
@@ -35,7 +35,7 @@ Deployment określa, że każda instancja ma być oparta na obrazie "k8s.gcr.io/
 Dodatkowo, Service "php-apache" jest utworzony jako interfejs dla komunikacji z replikami, przekierowując ruch z portu 80 do odpowiednich Pod-ów opartych na etykiecie "run: php-apache".
 Ten plik jest kluczowy do zarządzania skalowaniem i dostępnością aplikacji w środowisku Kubernetes.
 
-## Autoscaler
+## HorizontalPodAutoscaler
 
 Plik definiuje obiekt HorizontalPodAutoscaler (HPA) w przestrzeni nazw zad5.
 HPA umożliwia automatyczne skalowanie aplikacji w oparciu o aktualne obciążenie. 
@@ -47,27 +47,27 @@ Konfiguracja HPA jest kluczowa dla elastycznego dostosowywania infrastruktury do
 
 Utwórz przestrzeń nazw:
 ```bash
-kubectl apply -f zad5-namespace.yaml
+kubectl apply -f namespace.yaml
 ```
 
 Utwórz Quotę:
 ```bash
-kubectl apply -f zad5-quota.yaml
+kubectl apply -f res_quota.yaml
 ```
 
 Utwórz Pod-a w przestrzeni zad5:
 ```bash
-kubectl apply -f zad5-worker-pod.yaml
+kubectl apply -f worker_pod.yaml
 ```
 
 Utwórz Deployment i Service:
 ```bash
-kubectl apply -f zad5-php-apache.yaml
+kubectl apply -f php_apache_deployment.yaml
 ```
 
 Utwórz HorizontalPodAutoscaler:
 ```bash
-kubectl apply -f zad5-hpa.yaml
+kubectl apply -f autoscaler.yaml
 ```
 
 Potwierdź działanie i sprawdź zasoby:
